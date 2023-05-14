@@ -8,6 +8,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.ResultSet;
+import java.sql.PreparedStatement;
 import org.h2.tools.Server;
 import static java.lang.System.*;
 import java.lang.reflect.InvocationTargetException;
@@ -252,6 +254,21 @@ public class Aplicacion {
      * @param con Conexión a la BD
      */
     private static void consultarActividades(Connection con) {
+        ES.msgln("------------- Listado de actividades ---------------");
+        ES.msgln("Código Tipo                     Duración  Distancia");
+        ES.msgln("------ ------------------------ --------- ----------");
+        try (Statement consulta = con.createStatement()) {
+            ResultSet rs = consulta.executeQuery("SELECT codigo,tipo,duracion,distancia FROM actividad");
+            while (rs.next()) {
+                int codigo = rs.getInt("codigo");
+                String tipo = rs.getString("tipo");
+                int duracion = rs.getInt("duracion");
+                double distancia = rs.getFloat("distancia");
+                ES.msgln(String.format("%6d %-24s %9d %10f", codigo, tipo, duracion, distancia));
+            }
+        } catch (SQLException ex) {
+            System.err.printf("Problema consultando las actividades.\n");
+        }
 
     }
 
@@ -262,6 +279,22 @@ public class Aplicacion {
      * @param con Conexión a la BD
      */
     private static void modificarActividad(Connection con) {
+        int codigo = ES.leeEntero("Escriba el código de la actividad para modificar la duración y la distancia:");
+        int duracion = ES.leeEntero("Escriba la nueva duración de la actividad:");
+        double distancia = ES.leeDecimal("Escriba la nueva distancia de la actividad:");
+        try (PreparedStatement ps = con.prepareStatement("UPDATE actividad SET duracion=?, distancia=? WHERE codigo=?")) {
+            ps.setInt(1, duracion);
+            ps.setDouble(2, distancia);
+            ps.setInt(3, codigo);
+            int filas = ps.executeUpdate();
+            if (filas > 0) {
+                ES.msgln("Modificación correcta.");
+            } else {
+                ES.msgln("No se realizó ninguna modificación en la base de datos.");
+            }
+        } catch (SQLException ex) {
+            System.err.printf("Problema modificando la actividad %d.\n", codigo);
+        }
 
     }
 
@@ -271,6 +304,19 @@ public class Aplicacion {
      * @param con Conexión a la BD
      */
     private static void consultarUsuarios(Connection con) {
+        ES.msgln("------------- Listado de usuarios ---------------");
+        ES.msgln("Código Nombre");
+        ES.msgln("------ ------------------------");
+        try (Statement consulta = con.createStatement()) {
+            ResultSet rs = consulta.executeQuery("SELECT codigo,nombre FROM usuario");
+            while (rs.next()) {
+                int codigo = rs.getInt("codigo");
+                String nombre = rs.getString("nombre");
+                ES.msgln(String.format("%6d %-24s", codigo, nombre));
+            }
+        } catch (SQLException ex) {
+            System.err.printf("Problema consultando los usuarios.\n");
+        }
 
     }
 
@@ -280,6 +326,19 @@ public class Aplicacion {
      * @param con Conexión a la BD
      */
     private static void borrarUsuario(Connection con) {
+        int codigo = ES.leeEntero("Escriba el código del usuario a borrar:");
+        try (PreparedStatement ps = con.prepareStatement("DELETE FROM usuario WHERE codigo=?")) {
+            ps.setInt(1, codigo);
+            int filas = ps.executeUpdate();
+            if (filas > 0) {
+                ES.msgln(String.format("Borrado usuario con código %d correctamente" , codigo));
+            } else {
+                ES.msgln("No se realizó ningún borrado en la base de datos.");
+            }
+        } catch (SQLException ex) {
+            System.err.printf("Problema borrando el usuario %d.\n", codigo);
+        }
+
 
     }
 }
