@@ -264,7 +264,7 @@ public class Aplicacion {
                 String tipo = rs.getString("tipo");
                 int duracion = rs.getInt("duracion");
                 double distancia = rs.getFloat("distancia");
-                ES.msgln(String.format("%6d %-24s %9d %10f", codigo, tipo, duracion, distancia));
+                ES.msgln(String.format("%6d %-24s %9d %10.2f", codigo, tipo, duracion, distancia));
             }
         } catch (SQLException ex) {
             System.err.printf("Problema consultando las actividades.\n");
